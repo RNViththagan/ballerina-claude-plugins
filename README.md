@@ -1,21 +1,54 @@
 # ballerina-claude-plugins
 
-WSO2 Ballerina plugin for Claude Code — LSP support and AI coding skills in a single plugin.
-
-## Plugin
-
-### ballerina
-
-Language Server Protocol support and AI coding assistant for Ballerina.
-
-- Code intelligence (completions, go-to-definition, hover, semantic highlighting) for `.bal` files
-- AI skill for writing integrations, discovering libraries, and running/testing projects
-
-**Requires:** Ballerina >= 2201.12.0 (Swan Lake Update 12+), `bal` command in PATH.
+WSO2 Ballerina plugin for Claude Code — LSP code intelligence and AI coding assistant in a single plugin.
 
 ## Installation
 
 ```
 /plugin install /path/to/ballerina-claude-plugins
 /plugin enable ballerina
+```
+
+**Prerequisites:** Ballerina >= 2201.12.0 (Swan Lake Update 12+), `bal` in PATH.
+
+## Architecture
+
+### Plugin design
+
+A single `ballerina` plugin combines two capabilities:
+
+- **LSP** — `lspServers` in `plugin.json` points to `.lsp.json`, which starts `bal start-language-server` and maps `.bal` files. Provides completions, go-to-definition, hover, and semantic highlighting.
+- **Skill** — `skills/ballerina/` contains the `ballerina` skill for writing, running, and testing Ballerina code.
+
+Both are loaded with one `/plugin enable ballerina` command.
+
+### Skill progressive disclosure
+
+Only `SKILL.md` is loaded when the skill triggers — it is kept intentionally lean (workflow steps only). Reference files are loaded by Claude on demand, keeping context usage low:
+
+| File | Loaded when |
+|---|---|
+| `code-rules.md` | Writing or modifying Ballerina code |
+| `langlib-reference.md` | Looking up built-in language library APIs |
+| `setup.md` | `bal` is not found on the machine |
+
+## Repo structure
+
+```
+ballerina-claude-plugins/
+├── .claude-plugin/
+│   └── marketplace.json
+├── README.md
+└── plugins/
+    └── ballerina/
+        ├── .claude-plugin/
+        │   └── plugin.json          ← lspServers + plugin metadata
+        ├── .lsp.json                ← Ballerina language server config
+        ├── README.md
+        └── skills/
+            └── ballerina/
+                ├── SKILL.md         ← skill trigger + lean workflow
+                ├── code-rules.md    ← Ballerina coding rules reference
+                ├── langlib-reference.md  ← built-in langlib API reference
+                └── setup.md         ← install guide (loaded only if bal missing)
 ```
