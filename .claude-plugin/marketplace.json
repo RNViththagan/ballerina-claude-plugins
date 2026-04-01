@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ballerina-claude-plugins",
+  "description": "Ballerina plugin for Claude Code — LSP support and AI coding assistant",
+  "owner": {
+    "name": "RNViththagan"
+  },
+  "plugins": [
+    {
+      "name": "ballerina",
+      "description": "Ballerina language support for Claude Code — LSP code intelligence and AI coding assistant for writing integrations, discovering libraries, and running projects",
+      "version": "1.0.0",
+      "author": {
+        "name": "RNViththagan"
+      },
+      "source": "./plugins/ballerina",
+      "homepage": "https://ballerina.io",
+      "category": "development"
+    }
+  ]
+}
