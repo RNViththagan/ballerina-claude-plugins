@@ -1,0 +1,29 @@
+---
+name: ballerina
+description: Writes, runs, and tests Ballerina programs and integrations. Use when the user
+  asks to write, create, implement, update, or fix Ballerina code; build an HTTP service
+  or integration in Ballerina; run, test, or build a Ballerina project; or when the user
+  does not have Ballerina installed and needs help setting it up.
+---
+
+If `bal` is not found on the machine, read [setup.md](setup.md) and help the user install Ballerina before proceeding.
+
+## Writing Ballerina Code
+
+**Step 1 — Read existing code**: Read `.bal` files to understand the project structure. Prefer modifying existing files over creating new ones.
+
+**Step 2 — Write the code**: Follow all rules in [code-rules.md](code-rules.md). Key rules:
+- Use records for all data — never `json` or `map<json>` directly
+- Two-word camelCase for every identifier
+- Named arguments for every function/method call
+
+**Step 3 — Validate**: Run `bal build`. Fix errors and re-run. Repeat until clean. If unresolvable after multiple attempts, report what remains.
+
+For langlib API quick reference: [langlib-reference.md](langlib-reference.md)
+
+## Running and Testing
+
+- Test request → `bal test`; otherwise → `bal run`
+- Always run `bal build` first — if errors, stop and report each one with file and line number
+- On run: show full output; stop any started service when done
+- On test: state what is being tested, show pass/fail count, fix failures and re-run
