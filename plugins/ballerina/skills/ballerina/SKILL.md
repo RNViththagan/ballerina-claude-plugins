@@ -6,8 +6,6 @@ description: Writes, runs, and tests Ballerina programs and integrations. Use wh
   does not have Ballerina installed and needs help setting it up.
 ---
 
-If `bal` is not found on the machine, read [setup.md](setup.md) and help the user install Ballerina before proceeding.
-
 ## Writing Ballerina Code
 
 **Step 1 — Read existing code**: Read `.bal` files to understand the project structure. Prefer modifying existing files over creating new ones.
@@ -27,3 +25,7 @@ For langlib API quick reference: [langlib-reference.md](langlib-reference.md)
 - Always run `bal build` first — if errors, stop and report each one with file and line number
 - On run: show full output; stop any started service when done
 - On test: state what is being tested, show pass/fail count, fix failures and re-run
+
+## Ballerina Not Installed
+
+If a `bal` command fails because Ballerina is not installed, read [setup.md](setup.md) for installation instructions.
