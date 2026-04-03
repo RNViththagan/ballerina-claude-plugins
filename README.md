@@ -1,15 +1,12 @@
 # ballerina-claude-plugins
 
-WSO2 Ballerina plugin for Claude Code — LSP code intelligence and AI coding assistant in a single plugin.
+Ballerina plugin for Claude Code — LSP code intelligence and AI coding assistant in a single plugin.
 
-## Installation
+## Plugins
 
-```
-/plugin install /path/to/ballerina-claude-plugins
-/plugin enable ballerina
-```
-
-**Prerequisites:** Ballerina >= 2201.12.0 (Swan Lake Update 12+), `bal` in PATH.
+| Plugin | Description |
+|--------|-------------|
+| [ballerina](plugins/ballerina/README.md) | LSP code intelligence + AI coding skill |
 
 ## Architecture
 
@@ -20,7 +17,7 @@ A single `ballerina` plugin combines two capabilities:
 - **LSP** — `lspServers` in `plugin.json` points to `.lsp.json`, which starts `bal start-language-server` and maps `.bal` files. Provides completions, go-to-definition, hover, and semantic highlighting.
 - **Skill** — `skills/ballerina/` contains the `ballerina` skill for writing, running, and testing Ballerina code.
 
-Both are loaded with one `/plugin enable ballerina` command.
+Both are activated after installing the plugin and restarting Claude Code.
 
 ### Skill progressive disclosure
 
