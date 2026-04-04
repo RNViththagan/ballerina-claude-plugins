@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "ballerina": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.js"],
+      "env": {
+        "NODE_PATH": "${CLAUDE_PLUGIN_DATA}/node_modules",
+        "LOCAL_BAL_LS_JAR": "/Users/viththagan/WSO2/ballerina-language-server/flow-model-generator/modules/flow-model-generator-ls-extension/build/libs/flow-model-generator-ls-extension-1.7.0.alpha4.jar",
+        "LOCAL_BAL_LS_BUILD": "/Users/viththagan/WSO2/ballerina-language-server"
+      }
+    }
+  }
+}
