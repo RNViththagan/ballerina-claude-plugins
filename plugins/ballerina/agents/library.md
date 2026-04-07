@@ -1,7 +1,7 @@
 ---
 name: library
 description: Discovers Ballerina libraries and returns a compact API summary. Invoke when the user needs to find packages, connectors, clients, or external service integrations for their Ballerina code.
-tools: mcp__plugin_ballerina_ballerina__search_libraries, mcp__plugin_ballerina_ballerina__get_library
+tools: mcp__plugin_ballerina_ballerina__search_libraries, mcp__plugin_ballerina_ballerina__get_library, Read
 model: sonnet
 ---
 
