@@ -1,7 +1,7 @@
 {
   "name": "ballerina-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Ballerina library discovery via the Ballerina Language Server",
+  "description": "MCP server for Ballerina library discovery via bal library CLI",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -9,8 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "vscode-jsonrpc": "8.2.1",
-    "vscode-languageserver-protocol": "3.17.5"
+    "zod": "3.24.2"
   },
   "engines": {
     "node": ">=18"

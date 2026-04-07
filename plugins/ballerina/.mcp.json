@@ -4,9 +4,7 @@
       "command": "node",
       "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.js"],
       "env": {
-        "NODE_PATH": "${CLAUDE_PLUGIN_DATA}/node_modules",
-        "LOCAL_BAL_LS_JAR": "REDACTED_LOCAL_PATH/language-server/modules/language-server-extension/build/libs/language-server.jar",
-        "LOCAL_BAL_LS_BUILD": "REDACTED_LOCAL_PATH"
+        "NODE_PATH": "${CLAUDE_PLUGIN_DATA}/node_modules"
       }
     }
   }
