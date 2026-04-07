@@ -1,36 +1,17 @@
 /**
  * Ballerina MCP server — exposes library discovery tools to Claude.
- * Tools proxy to the Ballerina Language Server via a dedicated LS child process.
+ * Uses `bal library search/get` CLI commands (bal-library-tool) to query
+ * the bundled SQLite indexes — no Language Server dependency.
  *
  * Tools:
- *   search_libraries  — find libraries by keywords (copilotLibraryManager/getLibrariesBySearch)
- *   get_library       — get full API details for libraries (copilotLibraryManager/getFilteredLibraries)
+ *   search_libraries  — find libraries by keywords
+ *   get_library       — get full API details for libraries
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { spawnSync } from "child_process";
 import { z } from "zod";
-import { BallerinaLSClient } from "./ls-client.js";
-
-// Resolve LOCAL_BAL_LS_JAR/BUILD from the known local build path if not set in env.
-if (!process.env.LOCAL_BAL_LS_JAR) {
-  const { readdirSync } = await import("fs");
-  const LS_BUILD = "/Users/viththagan/WSO2/ballerina-language-server";
-  const jarDir = `${LS_BUILD}/flow-model-generator/modules/flow-model-generator-ls-extension/build/libs`;
-  try {
-    const jars = readdirSync(jarDir).filter(f =>
-      f.startsWith("flow-model-generator-ls-extension") && f.endsWith(".jar") &&
-      !f.includes("sources") && !f.includes("all.")
-    );
-    if (jars.length > 0) {
-      process.env.LOCAL_BAL_LS_JAR = `${jarDir}/${jars.sort().at(-1)}`;
-      process.env.LOCAL_BAL_LS_BUILD = LS_BUILD;
-      process.stderr.write(`[MCP] Using local LS jar: ${process.env.LOCAL_BAL_LS_JAR}\n`);
-    }
-  } catch { /* local build not available */ }
-}
-
-const ls = new BallerinaLSClient();
 
 const server = new McpServer({
   name: "ballerina",
@@ -50,24 +31,22 @@ server.tool(
       ),
   },
   async ({ keywords }) => {
-    try {
-      const result = await ls.request(
-        "copilotLibraryManager/getLibrariesBySearch",
-        { keywords }
-      );
+    const result = spawnSync("bal", ["library", "search", ...keywords], { encoding: "utf8" });
 
-      const libraries = result?.libraries ?? [];
-      if (libraries.length === 0) {
-        return { content: [{ type: "text", text: "No libraries found for the given keywords." }] };
-      }
-
-      return {
-        content: [{ type: "text", text: libraries.map(lib => `${lib.name}: ${lib.description}`).join("\n") }],
-      };
-    } catch (err) {
-      process.stderr.write(`[search_libraries error] ${err?.message ?? err}\n`);
-      throw err;
+    if (result.error || result.status !== 0) {
+      const msg = result.error?.message ?? result.stderr ?? "bal library search failed";
+      process.stderr.write(`[search_libraries error] ${msg}\n`);
+      throw new Error(msg);
     }
+
+    const libraries = JSON.parse(result.stdout);
+    if (libraries.length === 0) {
+      return { content: [{ type: "text", text: "No libraries found for the given keywords." }] };
+    }
+
+    return {
+      content: [{ type: "text", text: libraries.map(l => `${l.name}: ${l.description}`).join("\n") }],
+    };
   }
 );
 
@@ -83,27 +62,17 @@ server.tool(
       ),
   },
   async ({ libNames }) => {
-    try {
-      const result = await ls.request(
-        "copilotLibraryManager/getFilteredLibraries",
-        { libNames }
-      );
+    const result = spawnSync("bal", ["library", "get", ...libNames], { encoding: "utf8", maxBuffer: 50 * 1024 * 1024 });
 
-      const libraries = result?.libraries ?? [];
-      if (libraries.length === 0) {
-        return { content: [{ type: "text", text: "No library details found." }] };
-      }
-
-      return { content: [{ type: "text", text: JSON.stringify(libraries, null, 2) }] };
-    } catch (err) {
-      process.stderr.write(`[get_library error] ${err?.message ?? err}\n`);
-      throw err;
+    if (result.error || result.status !== 0) {
+      const msg = result.error?.message ?? result.stderr ?? "bal library get failed";
+      process.stderr.write(`[get_library error] ${msg}\n`);
+      throw new Error(msg);
     }
+
+    return { content: [{ type: "text", text: result.stdout }] };
   }
 );
-
-process.on("SIGINT", () => { ls.shutdown(); process.exit(0); });
-process.on("SIGTERM", () => { ls.shutdown(); process.exit(0); });
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
