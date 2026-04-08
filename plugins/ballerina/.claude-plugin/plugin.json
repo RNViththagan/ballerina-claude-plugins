@@ -1,6 +1,6 @@
 {
   "name": "ballerina",
-  "version": "1.2.1",
+  "version": "0.3.0",
   "description": "Ballerina language support for Claude Code — LSP code intelligence and AI coding assistant for writing integrations, discovering libraries, and running projects",
   "author": {
     "name": "RNViththagan"
@@ -9,18 +9,5 @@
   "repository": "https://github.com/RNViththagan/ballerina-claude-plugins",
   "license": "Apache-2.0",
   "keywords": ["ballerina", "lsp", "integration", "wso2", "cloud-native"],
-  "lspServers": "./.lsp.json",
-  "mcpServers": "./.mcp.json",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "diff -q \"${CLAUDE_PLUGIN_ROOT}/mcp/package.json\" \"${CLAUDE_PLUGIN_DATA}/package.json\" >/dev/null 2>&1 || (mkdir -p \"${CLAUDE_PLUGIN_DATA}\" && cp \"${CLAUDE_PLUGIN_ROOT}/mcp/package.json\" \"${CLAUDE_PLUGIN_DATA}/package.json\" && cd \"${CLAUDE_PLUGIN_DATA}\" && npm install) || rm -f \"${CLAUDE_PLUGIN_DATA}/package.json\""
-          }
-        ]
-      }
-    ]
-  }
+  "lspServers": "./.lsp.json"
 }
