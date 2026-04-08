@@ -9,7 +9,7 @@
     {
       "name": "ballerina",
       "description": "Ballerina language support for Claude Code — LSP code intelligence and AI coding assistant for writing integrations, discovering libraries, and running projects",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "RNViththagan"
       },

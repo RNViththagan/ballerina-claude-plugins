@@ -35,6 +35,10 @@ From the search results, select the minimal set of libraries that can fulfill th
 
 Run `bal library get <name1> <name2> ...` via Bash with the selected library names.
 
+Critical command rules:
+- Library names are always `org/package` format — NEVER append a version suffix (e.g. `ballerinax/github`, NOT `ballerinax/github:5.0.0`)
+- The output is large JSON. If you need to filter it, pipe through a Bash one-liner in the same command. Do NOT attempt to read raw temp files from disk.
+
 **Step 4 — Filter and summarize**
 
 The `bal library get` response is large. You MUST distill it before returning. Apply this filtering logic:
@@ -44,8 +48,9 @@ The `bal library get` response is large. You MUST distill it before returning. A
 3. **Identify required types** — include only the type definitions (records, enums, unions) that are referenced by the selected functions' parameters or return types
 4. **Exclude** anything not directly needed for the user's specific request
 
-Critical rules:
-- Use ONLY items from the `bal library get` response — never invent or infer new ones
+Critical rules — NO HALLUCINATION:
+- Use ONLY items from the `bal library get` response — never invent or infer function names, parameters, or types
+- If you are not 100% certain a function or type exists in the output, do not include it
 - Copy all field values EXACTLY — preserve backslashes and special characters
 - For resource functions: `accessor` contains ONLY the HTTP method (e.g., `"post"`, `"get"`) — the `paths` field is separate
 - If no relevant functions found for a library, omit that library from the summary
