@@ -28,6 +28,10 @@ For langlib API quick reference: [langlib-reference.md](langlib-reference.md)
 - On run: show full output; stop any started service when done
 - On test: state what is being tested, show pass/fail count, fix failures and re-run
 
+## Troubleshooting
+
+When the user reports an error, failure, or unexpected behavior, read [troubleshooting.md](troubleshooting.md) to diagnose and resolve it. Start with the Quick Fixes Cheat Sheet — it covers the most common errors. Use the Table of Contents to find the relevant deep-dive section.
+
 ## Ballerina Not Installed
 
 If a `bal` command fails because Ballerina is not installed, read [setup.md](setup.md) for installation instructions.
