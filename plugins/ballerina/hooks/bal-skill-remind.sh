@@ -22,7 +22,9 @@ MARKER="${TMPDIR:-/tmp}/.ballerina-skill-${PPID}"
 
 touch "$MARKER"
 cat <<'EOF'
+<system-reminder>
 You are about to work with Ballerina but the 'ballerina' skill has not been activated yet.
 Invoke the 'ballerina' skill now to load the mandatory code rules, then retry this operation.
+</system-reminder>
 EOF
 exit 2
