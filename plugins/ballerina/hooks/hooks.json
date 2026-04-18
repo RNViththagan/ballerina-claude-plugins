@@ -1,0 +1,17 @@
+{
+  "description": "Enforce ballerina skill activation before writing .bal files",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/bal-skill-remind.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
