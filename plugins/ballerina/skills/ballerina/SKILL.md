@@ -17,17 +17,16 @@ cd <project-name>
 bal build                # confirm baseline compiles before writing code
 ```
 
-- Read the generated `Ballerina.toml` to understand the package (name, org, version) — do not manually edit it to add dependencies; use `bal add` instead
+- Read the generated `Ballerina.toml` to understand the package (name, org, version)
 - For a workspace (multiple packages in one repo), see workspace rules in [code-rules.md](code-rules.md)
 
 ## Writing Ballerina Code
 
 **Step 1 — Read existing code**: Read `.bal` files and `Ballerina.toml` to understand the project structure. Prefer modifying existing files over creating new ones.
 
-**Step 2 — Discover and add libraries if needed**: If the task requires an external connector or library you don't know, invoke the `library` agent. It will search, fetch, and return a compact API summary. Then add the package to the project:
-```bash
-bal add <org>/<package>   # e.g. bal add ballerinax/github
-```
+**Step 2 — Discover libraries if needed**: If the task requires an external connector or library you don't know, invoke the `library` agent. It will search, fetch, and return a compact API summary. Then add the `import` statement to your `.bal` file — Ballerina auto-resolves dependencies from Central when you run `bal build`.
+- **Never edit `Dependencies.toml`** — it is auto-managed by the build tool.
+- **Never edit `Ballerina.toml` to add dependencies** — imports + `bal build` handle this automatically.
 
 **Step 3 — Write the code**: Follow all rules in [code-rules.md](code-rules.md). Key rules:
 - Use records for all data — never `json` or `map<json>` directly
