@@ -37,7 +37,12 @@ Run `bal library get <name1> <name2> ...` via Bash with the selected library nam
 
 Critical command rules:
 - Library names are always `org/package` format — NEVER append a version suffix (e.g. `ballerinax/github`, NOT `ballerinax/github:5.0.0`)
-- The output is large JSON. If you need to filter it, pipe through a Bash one-liner in the same command. Do NOT attempt to read raw temp files from disk.
+- The output is large JSON — the Bash tool truncates it. Instead:
+  1. Redirect to a temp file: `bal library get <org/name> > /tmp/bal-lib-<name>.json`
+  2. Use the Read tool on that file to load the content
+  3. Construct the Step 4 summary from ONLY what is in the file — never invent or
+     infer function names, types, or parameters that are not present in the output
+- Never write Python scripts or shell scripts to parse the output
 
 **Step 4 — Filter and summarize**
 
