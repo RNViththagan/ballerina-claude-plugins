@@ -13,6 +13,8 @@
 - Use records for all data structures. Never use `map<json>`, `map<anydata>`, or raw `json`.
 - Never access or manipulate a `json` variable directly. Define a record, convert json to it (`cloneWithType()` or `fromJsonStringWithType()`), then use the record.
 - If a return typedesc is marked `<>` in API docs, define a custom record for the expected data shape.
+- If a parameter type is `record {|anydata...;|}`, define or reuse an explicit named record — do not pass an anonymous literal.
+- If a return type is `record {|anydata...;|}`, decide the shape, declare a named record, and assign to it.
 - When accessing a field of a record, assign it to a new typed variable first, then use that variable in the next statement.
 
 ## Identifiers
@@ -81,6 +83,7 @@ When working with a Ballerina workspace (root `Ballerina.toml` with a `[workspac
 - Prefer modifying existing `.bal` files over creating new ones unless explicitly asked.
 - Do not create documentation markdown files.
 - Do not manually add or modify `Dependencies.toml`.
+- Never manually edit `Ballerina.toml` to add dependencies — run `bal add <org>/<package>` instead.
 
 ## Tests
 

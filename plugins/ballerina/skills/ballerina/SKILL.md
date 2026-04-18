@@ -1,23 +1,40 @@
 ---
 name: ballerina
 description: Writes, runs, and tests Ballerina programs and integrations. Use when the user
-  asks to write, create, implement, update, or fix Ballerina code; build an HTTP service
-  or integration in Ballerina; run, test, or build a Ballerina project; or when the user
+  asks to write, create, implement, update, or fix Ballerina code; create or set up a new
+  Ballerina project or package; build an HTTP service, API, or integration in Ballerina;
+  run, test, or build a Ballerina project; add a library or dependency; or when the user
   does not have Ballerina installed and needs help setting it up.
 ---
 
+## Creating a New Project
+
+When the user asks to create a new project, service, or program from scratch:
+
+```bash
+bal new <project-name>   # scaffolds main.bal + Ballerina.toml
+cd <project-name>
+bal build                # confirm baseline compiles before writing code
+```
+
+- Read the generated `Ballerina.toml` to understand the package (name, org, version) — do not manually edit it to add dependencies; use `bal add` instead
+- For a workspace (multiple packages in one repo), see workspace rules in [code-rules.md](code-rules.md)
+
 ## Writing Ballerina Code
 
-**Step 1 — Read existing code**: Read `.bal` files to understand the project structure. Prefer modifying existing files over creating new ones.
+**Step 1 — Read existing code**: Read `.bal` files and `Ballerina.toml` to understand the project structure. Prefer modifying existing files over creating new ones.
 
-**Step 2 — Discover libraries if needed**: If the task requires an external connector or library you don't know, invoke the `library` agent. It will search, fetch, and return a compact API summary. Use that summary to write the code.
+**Step 2 — Discover and add libraries if needed**: If the task requires an external connector or library you don't know, invoke the `library` agent. It will search, fetch, and return a compact API summary. Then add the package to the project:
+```bash
+bal add <org>/<package>   # e.g. bal add ballerinax/github
+```
 
 **Step 3 — Write the code**: Follow all rules in [code-rules.md](code-rules.md). Key rules:
 - Use records for all data — never `json` or `map<json>` directly
 - Two-word camelCase for every identifier
 - Named arguments for every function/method call
 
-**Step 4 — Validate**: Run `bal build`. Fix errors and re-run. Repeat until clean. If unresolvable after multiple attempts, report what remains.
+**Step 4 — Validate**: Run `bal build`. Fix every error before moving on. Repeat until clean. If unresolvable after multiple attempts, report what remains with file and line number.
 
 For langlib API quick reference: [langlib-reference.md](langlib-reference.md)
 
