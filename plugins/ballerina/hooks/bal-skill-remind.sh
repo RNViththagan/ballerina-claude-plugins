@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 input=$(cat)
-fp=$(echo "$input" | jq -r '.tool_input.file_path // ""')
+tool=$(echo "$input" | jq -r '.tool_name // .tool // ""')
 
-[[ "$fp" == *.bal ]] || exit 0
+case "$tool" in
+  Write|Edit)
+    fp=$(echo "$input" | jq -r '.tool_input.file_path // ""')
+    [[ "$fp" == *.bal ]] || exit 0
+    ;;
+  Bash)
+    cmd=$(echo "$input" | jq -r '.tool_input.command // ""')
+    echo "$cmd" | grep -qE '\bbal\s+(new|run|build|test|add|push|pull|format|doc)\b' || exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
 
 # Marker keyed on PPID — fires once per Claude Code process (session)
 MARKER="${TMPDIR:-/tmp}/.ballerina-skill-${PPID}"
@@ -10,7 +22,7 @@ MARKER="${TMPDIR:-/tmp}/.ballerina-skill-${PPID}"
 
 touch "$MARKER"
 cat <<'EOF'
-You are about to write a Ballerina (.bal) file but the 'ballerina' skill has not been activated yet.
-Invoke the 'ballerina' skill now to load the mandatory code rules, then retry this file operation.
+You are about to work with Ballerina but the 'ballerina' skill has not been activated yet.
+Invoke the 'ballerina' skill now to load the mandatory code rules, then retry this operation.
 EOF
 exit 2
