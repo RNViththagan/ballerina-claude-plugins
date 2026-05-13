@@ -19,6 +19,8 @@ A single `ballerina` plugin combines two capabilities:
 
 Both are activated after installing the plugin and restarting Claude Code.
 
+> **External dependency:** the `library` sub-agent requires the `bal library` CLI tool, which lives in a separate repo: [RNViththagan/bal-library-tool](https://github.com/RNViththagan/bal-library-tool). See the [plugin README](plugins/ballerina/README.md#prerequisites) for install instructions.
+
 ### Skill progressive disclosure
 
 Only `SKILL.md` is loaded when the skill triggers — it is kept intentionally lean (workflow steps only). Reference files are loaded by Claude on demand, keeping context usage low:

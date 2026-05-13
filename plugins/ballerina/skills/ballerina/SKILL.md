@@ -25,6 +25,7 @@ bal build                # confirm baseline compiles before writing code
 **Step 1 — Read existing code**: Read `.bal` files and `Ballerina.toml` to understand the project structure. Prefer modifying existing files over creating new ones.
 
 **Step 2 — Discover libraries if needed**: If the task requires an external connector or library you don't know, invoke the `library` agent. It will search, fetch, and return a compact API summary. Then add the `import` statement to your `.bal` file — Ballerina auto-resolves dependencies from Central when you run `bal build`.
+- The library agent requires the `bal library` CLI tool. If it errors out as "not installed", read [library-tool-setup.md](library-tool-setup.md).
 - **Never edit `Dependencies.toml`** — it is auto-managed by the build tool.
 - **Never edit `Ballerina.toml` to add dependencies** — imports + `bal build` handle this automatically.
 
