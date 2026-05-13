@@ -47,3 +47,7 @@ For langlib API quick reference: [langlib-reference.md](langlib-reference.md)
 ## Ballerina Not Installed
 
 If a `bal` command fails because Ballerina is not installed, read [setup.md](setup.md) for installation instructions.
+
+## Errors and Unexpected Behavior
+
+When `bal build` reports an error, a program panics at runtime, or behavior is unexpected, read [troubleshooting/index.md](troubleshooting/index.md) to find the matching topic file. **Do not preload every troubleshooting file** — the index is a router that points to the one relevant file for the symptom.
