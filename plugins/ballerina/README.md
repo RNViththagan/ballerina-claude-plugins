@@ -11,6 +11,16 @@ Ballerina language support for Claude Code — LSP code intelligence and AI codi
 
 - Ballerina >= 2201.12.0 (Swan Lake Update 12+)
 - `bal` command available in PATH
+- **`bal library` CLI tool** — required by the `library` discovery sub-agent for `bal library search` and `bal library get`. Install from source for now:
+
+  ```bash
+  git clone https://github.com/RNViththagan/bal-library-tool.git
+  cd bal-library-tool
+  ./gradlew clean build
+  ./install-local.sh   # registers it as a bal tool
+  ```
+
+  See the [bal-library-tool repo](https://github.com/RNViththagan/bal-library-tool) for full build prerequisites.
 
 ## Installation
 
