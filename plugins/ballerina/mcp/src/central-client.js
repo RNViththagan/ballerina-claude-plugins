@@ -47,10 +47,17 @@ function parseSearchOutput(stdout) {
 // exec helper — default child_process wrapper
 // ---------------------------------------------------------------------------
 
-function defaultExec(cmd, opts = {}) {
+function defaultExec(_cmdString, opts = {}) {
+    const argv = (opts && opts.argv) || [];
+    const [program, ...args] = argv;
+    if (!program) {
+        return Promise.reject(new Error("defaultExec: opts.argv must contain at least the program"));
+    }
+    // Strip non-spawn options before handing to execFile
+    const spawnOpts = { ...opts };
+    delete spawnOpts.argv;
     return new Promise((resolve, reject) => {
-        const [program, ...args] = cmd;
-        execFile(program, args, opts, (err, stdout, stderr) => {
+        execFile(program, args, spawnOpts, (err, stdout, stderr) => {
             if (err) {
                 err.stdout = stdout;
                 err.stderr = stderr;
@@ -82,7 +89,13 @@ async function searchPackages(keyword, { exec } = {}) {
     // we always call exec with the joined-string form first; if the test mock prefers,
     // it can still inspect.
     const cmd = ["bal", "search", ...tokens];
-    const result = await execImpl(cmd.join(" "), { env: { ...process.env, COLUMNS: "200" } });
+    // Tests stub `exec` to inspect either array or joined-string form, so we hand off
+    // an inspectable string (`cmd.join(" ")`) along with the program+args list so the
+    // default exec can run argv-style without invoking a shell.
+    const result = await execImpl(cmd.join(" "), {
+        env: { ...process.env, COLUMNS: "200" },
+        argv: cmd,
+    });
     return parseSearchOutput(result.stdout || "");
 }
 
