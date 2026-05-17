@@ -11,16 +11,9 @@ Ballerina language support for Claude Code — LSP code intelligence and AI codi
 
 - Ballerina >= 2201.12.0 (Swan Lake Update 12+)
 - `bal` command available in PATH
-- **`bal library` CLI tool** — required by the `library` discovery sub-agent for `bal library search` and `bal library get`. Install from source for now:
+- Node.js >= 18 (for the bundled `ballerina-library` MCP server that powers the `library` discovery sub-agent)
 
-  ```bash
-  git clone https://github.com/RNViththagan/the bal library CLI.git
-  cd the bal library CLI
-  ./gradlew clean build
-  ./install-local.sh   # registers it as a bal tool
-  ```
-
-  See the [the bal library CLI repo](https://github.com/RNViththagan/the bal library CLI) for full build prerequisites.
+The `library` sub-agent discovers Ballerina libraries via the bundled MCP server (`mcp/server.js`), which uses `bal search` plus the Ballerina Central API. The server's Node dependencies are installed automatically when the plugin is first loaded; if you ever need to reinstall manually, run `npm install` inside `plugins/ballerina/mcp/`.
 
 ## Installation
 

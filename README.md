@@ -19,7 +19,7 @@ A single `ballerina` plugin combines two capabilities:
 
 Both are activated after installing the plugin and restarting Claude Code.
 
-> **External dependency:** the `library` sub-agent requires the `bal library` CLI tool, which lives in a separate repo: [RNViththagan/the bal library CLI](https://github.com/RNViththagan/the bal library CLI). See the [plugin README](plugins/ballerina/README.md#prerequisites) for install instructions.
+The `library` sub-agent is powered by a bundled MCP server (`plugins/ballerina/mcp/`) that wraps `bal search` and the Ballerina Central API. Node.js >= 18 is required; no external CLI tool needs to be installed.
 
 ### Skill progressive disclosure
 
