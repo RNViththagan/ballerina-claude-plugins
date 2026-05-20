@@ -3,6 +3,7 @@
 const centralClient = require("./central-client.js");
 const { centralDocsToLibrary } = require("./central-to-library.js");
 const { toSyntaxString } = require("./to-syntax-string.js");
+const { postProcessLibrary } = require("./post-process.js");
 
 function asTextResult(text) {
     return { content: [{ type: "text", text }] };
@@ -48,7 +49,7 @@ async function getLibraryTool(args, deps = {}) {
         fetch: deps.fetch,
     });
     const docs = await centralClient.fetchDocs(org, name, version, { fetch: deps.fetch });
-    const library = centralDocsToLibrary(docs);
+    const library = postProcessLibrary(centralDocsToLibrary(docs));
     const syntax = toSyntaxString([library]);
     const header = `// Resolved: ${org}/${name}:${version}\n`;
     return asTextResult(header + syntax);
