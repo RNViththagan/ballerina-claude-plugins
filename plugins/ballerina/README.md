@@ -13,7 +13,7 @@ Ballerina language support for Claude Code — LSP code intelligence and AI codi
 - `bal` command available in PATH
 - Node.js >= 18 (for the bundled `ballerina-library` MCP server that powers the `library` discovery sub-agent)
 
-The `library` sub-agent discovers Ballerina libraries via the bundled MCP server (`mcp/server.js`), which uses `bal search` plus the Ballerina Central API. The server's Node dependencies are installed automatically when the plugin is first loaded; if you ever need to reinstall manually, run `npm install` inside `plugins/ballerina/mcp/`.
+The `library` sub-agent discovers Ballerina libraries via the bundled MCP server (`mcp/dist/server.js`), which uses `bal search` plus the Ballerina Central API. The server ships as a self-contained bundled JavaScript file — no `npm install` required after `/plugin install`. The bundle is regenerated with `npm run build` inside `plugins/ballerina/mcp/` whenever its source changes.
 
 ## Installation
 

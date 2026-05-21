@@ -16,6 +16,39 @@ You have two MCP tools available, served by the `ballerina-library` MCP server b
 
 If either tool errors with "tool not found" or similar, the `ballerina-library` MCP server is not registered. Tell the caller to ensure the `ballerina` plugin is enabled, restart Claude Code, and retry. Do not fall back to inventing function signatures.
 
+## Error handling — read this carefully
+
+Both tools return errors in a structured shape so you can act on them. When a call fails the tool result has `isError: true` and `content[0].text` is a JSON document like:
+
+```json
+{
+  "version": 1,
+  "error": "PACKAGE_NOT_FOUND",
+  "message": "Package ballerinax/foobar not found on Ballerina Central.",
+  "retryable": false,
+  "suggestion": "Use search_libraries to find the correct org/name.",
+  "details": { "qualifiedName": "ballerinax/foobar", "requestId": 7 }
+}
+```
+
+Parse that JSON. Branch on the `error` code:
+
+| `error` code | What it means | Your reaction |
+|---|---|---|
+| `VALIDATION` | The arguments you passed are malformed (most often: `name` has a `:version` suffix, or is missing). | Read `message` + `suggestion`, fix the call, retry **once**. If still failing, surface to the caller. |
+| `PACKAGE_NOT_FOUND` | The exact `org/name` (or `org/name:version`) is not on Central. | **Do NOT auto re-search.** Surface to the caller with the attempted name from `details.qualifiedName`. Suggest they verify the name or call `search_libraries` themselves with different keywords. |
+| `UPSTREAM_ERROR` | Central returned a non-OK HTTP status or a network call failed. Already retried by the server. | Stop. Surface to the caller as "Ballerina Central appears unreachable right now; please retry shortly." Do not loop. |
+| `TIMEOUT` | A call to Central exceeded its time budget. Already retried. | Same as `UPSTREAM_ERROR` — surface, don't loop. If you specifically expected a slow large package, try again with an explicit `version` to skip the registry lookup. |
+| `BAL_NOT_INSTALLED` | `bal` is not on the host's PATH. `search_libraries` cannot run. | Surface to the caller with the message: they need to install Ballerina (https://ballerina.io/downloads) and restart Claude Code. Do not retry. |
+| `BAL_COMMAND_FAILED` | `bal search` ran but exited non-zero. `details.stderr` has the output. | Quote the stderr verbatim to the caller and stop. Do not retry. |
+| `CANCELLED` | The MCP host cancelled the request mid-flight. | The caller already knows. Stop. |
+| `INTERNAL_ERROR` | Server-side bug or unexpected condition. | Surface the `message` to the caller and stop. Not the user's fault. |
+
+**General rules:**
+- **NEVER** retry on `VALIDATION`, `PACKAGE_NOT_FOUND`, `BAL_NOT_INSTALLED`, `BAL_COMMAND_FAILED`, `INTERNAL_ERROR`, or `CANCELLED`.
+- The server already retries `UPSTREAM_ERROR` and `TIMEOUT` 3× with backoff before surfacing them — do not add a second retry layer on top.
+- If `retryable` is `false`, never retry. If it's `true`, you may still choose to surface (and usually should).
+
 ## Workflow
 
 **Step 1 — Search**
