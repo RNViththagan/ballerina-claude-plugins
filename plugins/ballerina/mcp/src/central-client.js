@@ -2,7 +2,13 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { execFile } = require("node:child_process");
+
+const { fetchJson } = require("./net.js");
+const { runBal } = require("./exec.js");
+const {
+    PackageNotFoundError,
+    UpstreamError,
+} = require("./errors.js");
 
 // Endpoint constants — taken verbatim from
 // the Ballerina Central libraries pipeline/main.bal:24 (base URL)
@@ -44,36 +50,10 @@ function parseSearchOutput(stdout) {
 }
 
 // ---------------------------------------------------------------------------
-// exec helper — default child_process wrapper
-// ---------------------------------------------------------------------------
-
-function defaultExec(_cmdString, opts = {}) {
-    const argv = (opts && opts.argv) || [];
-    const [program, ...args] = argv;
-    if (!program) {
-        return Promise.reject(new Error("defaultExec: opts.argv must contain at least the program"));
-    }
-    // Strip non-spawn options before handing to execFile
-    const spawnOpts = { ...opts };
-    delete spawnOpts.argv;
-    return new Promise((resolve, reject) => {
-        execFile(program, args, spawnOpts, (err, stdout, stderr) => {
-            if (err) {
-                err.stdout = stdout;
-                err.stderr = stderr;
-                return reject(err);
-            }
-            resolve({ stdout, stderr, exitCode: 0 });
-        });
-    });
-}
-
-// ---------------------------------------------------------------------------
 // searchPackages
 // ---------------------------------------------------------------------------
 
-async function searchPackages(keyword, { exec } = {}) {
-    const execImpl = exec || ((cmdArr, opts) => defaultExec(cmdArr, opts));
+async function searchPackages(keyword, { execFile, signal } = {}) {
     // Take only the part before any shell metacharacter, then keep tokens that match
     // a safe allowlist. Even though we don't invoke a shell, this prevents the agent
     // (or a typo) from injecting flags or unrelated arguments into the bal command line.
@@ -84,36 +64,8 @@ async function searchPackages(keyword, { exec } = {}) {
     if (tokens.length === 0) {
         return [];
     }
-    // Pass as an array so the test (and the real call) sees the structured command.
-    // Mock exec in tests receives a single string command — to keep both paths working,
-    // we always call exec with the joined-string form first; if the test mock prefers,
-    // it can still inspect.
-    const cmd = ["bal", "search", ...tokens];
-    // Tests stub `exec` to inspect either array or joined-string form, so we hand off
-    // an inspectable string (`cmd.join(" ")`) along with the program+args list so the
-    // default exec can run argv-style without invoking a shell.
-    const result = await execImpl(cmd.join(" "), {
-        env: { ...process.env, COLUMNS: "200" },
-        argv: cmd,
-    });
+    const result = await runBal(["search", ...tokens], { execFile, signal });
     return parseSearchOutput(result.stdout || "");
-}
-
-// ---------------------------------------------------------------------------
-// fetch helpers
-// ---------------------------------------------------------------------------
-
-function defaultFetch(url, init) {
-    return globalThis.fetch(url, init);
-}
-
-async function getJson(url, { fetch } = {}) {
-    const fetchImpl = fetch || defaultFetch;
-    const resp = await fetchImpl(url);
-    if (!resp.ok) {
-        throw new Error(`Central request failed: ${resp.status} ${url}`);
-    }
-    return resp.json();
 }
 
 // ---------------------------------------------------------------------------
@@ -121,9 +73,9 @@ async function getJson(url, { fetch } = {}) {
 //   GET registry/packages?org=<org>&limit=1000&readme=false
 // ---------------------------------------------------------------------------
 
-async function fetchOrgPackages(org, { fetch, limit = 1000 } = {}) {
+async function fetchOrgPackages(org, { fetch, signal, limit = 1000 } = {}) {
     const url = `${CENTRAL_BASE_URL}registry/packages?org=${encodeURIComponent(org)}&limit=${limit}&readme=false`;
-    const body = await getJson(url, { fetch });
+    const body = await fetchJson(url, { fetch, signal });
     return body.packages || [];
 }
 
@@ -131,11 +83,11 @@ async function fetchOrgPackages(org, { fetch, limit = 1000 } = {}) {
 // resolveLatestVersion — the libraries pipeline/main.bal:74-78 (filter exact name client-side)
 // ---------------------------------------------------------------------------
 
-async function resolveLatestVersion(org, name, { fetch } = {}) {
-    const packages = await fetchOrgPackages(org, { fetch });
+async function resolveLatestVersion(org, name, { fetch, signal } = {}) {
+    const packages = await fetchOrgPackages(org, { fetch, signal });
     const exact = packages.find((p) => p.organization === org && p.name === name);
     if (!exact) {
-        throw new Error(`Package not found: ${org}/${name}`);
+        throw new PackageNotFoundError(`${org}/${name}`);
     }
     return exact.version;
 }
@@ -145,9 +97,20 @@ async function resolveLatestVersion(org, name, { fetch } = {}) {
 //   GET docs/<org>/<name>/<version>
 // ---------------------------------------------------------------------------
 
-async function fetchDocs(org, name, version, { fetch } = {}) {
+async function fetchDocs(org, name, version, { fetch, signal } = {}) {
     const url = `${CENTRAL_BASE_URL}docs/${encodeURIComponent(org)}/${encodeURIComponent(name)}/${encodeURIComponent(version)}`;
-    return getJson(url, { fetch });
+    try {
+        return await fetchJson(url, { fetch, signal });
+    } catch (err) {
+        // 404 from the docs endpoint means the (org, name, version) tuple isn't published.
+        if (err instanceof UpstreamError && err.details && err.details.status === 404) {
+            throw new PackageNotFoundError(`${org}/${name}:${version}`, {
+                suggestion: `Verify the package exists and the version '${version}' is published. Run search_libraries to see available packages.`,
+                details: { org, name, version },
+            });
+        }
+        throw err;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -159,8 +122,6 @@ function parseDependenciesToml(content) {
     if (!content) {
         return map;
     }
-    // Split into blocks separated by lines that start with `[[package]]` or any `[...]` header.
-    // For each block, capture org/name/version triplets.
     const lines = content.split("\n");
     let inPackage = false;
     let org;
@@ -215,12 +176,12 @@ function readDependenciesVersions(projectDir, { dependenciesFileName = "Dependen
 // ---------------------------------------------------------------------------
 
 async function resolveVersion(org, name, opts = {}) {
-    const { version, projectDir, dependenciesFileName, fetch } = opts;
+    const { version, projectDir, dependenciesFileName, fetch, signal } = opts;
     if (version) return version;
     const locked = readDependenciesVersions(projectDir, { dependenciesFileName });
     const lockedVersion = locked[`${org}/${name}`];
     if (lockedVersion) return lockedVersion;
-    return resolveLatestVersion(org, name, { fetch });
+    return resolveLatestVersion(org, name, { fetch, signal });
 }
 
 module.exports = {
