@@ -20,7 +20,7 @@ const {
 } = require("./errors.js");
 
 const DEFAULTS = Object.freeze({
-    timeoutMs: 120_000,     // per attempt — Central can be slow for large orgs (the libraries pipeline uses 240s)
+    timeoutMs: 120_000,     // per attempt — Central can be slow to respond for large orgs
     maxAttempts: 3,
     budgetMs: 60_000,       // total wall clock across all retries (covers a slow first attempt + 2 fast retries)
     baseDelayMs: 200,       // exponential backoff base

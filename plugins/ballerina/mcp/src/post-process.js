@@ -2,25 +2,22 @@
 
 // Post-processing for Library objects. Two intents:
 //
-// 1. Mirror the public algorithmic patches from
-//    the Ballerina Central libraries pipeline/the post-process module. The patches
-//    themselves are deterministic library-specific tweaks (e.g. sheets Range,
-//    slack OkTrueDef). The free-text "instructions" that the upstream attaches
-//    to GenericServices live in an internal service-instructions/*.md set we do
-//    NOT vendor, so http/graphql/ai service injectors here add the same
-//    listener structure with an empty instructions field.
+// 1. Apply deterministic, library-specific patches so the output matches what
+//    `bal library get` produces for the same package (e.g. the sheets Range
+//    field shape, the slack OkTrueDef collapse). The http/graphql/ai service
+//    injectors attach the same generic listener structure with an empty
+//    instructions field.
 //
 // 2. Collapse non-renderable typeDef.type strings to "Other" to match what
-//    `bal library get` produces (the Language Server keeps only Record / Enum /
-//    Union / Class / Constant; everything else becomes "Other" — confirmed by
-//    diffing both outputs for ballerinax/github).
+//    `bal library get` produces (only Record / Enum / Union / Class / Constant
+//    are kept; everything else becomes "Other").
 
 const LS_STANDARD_TYPES = new Set(["Record", "Enum", "Union", "Class", "Constant", "Error"]);
 
 function normalizeTypeDefTypes(library) {
     if (!library || !Array.isArray(library.typeDefs)) return library;
     for (const t of library.typeDefs) {
-        // the libraries pipeline tags errors as lowercase "error"; the LS uses capitalized "Error".
+        // The docs API tags errors as lowercase "error"; bal library get uses capitalized "Error".
         if (t.type === "error") {
             t.type = "Error";
             continue;
@@ -37,7 +34,7 @@ function normalizeTypeDefTypes(library) {
     return library;
 }
 
-// --- the post-process module:fixSheets2DArray ---
+// Patch: ballerinax/googleapis.sheets — correct the Range 2D-array field shape
 function fixSheets2DArray(library) {
     if (!library || library.name !== "ballerinax/googleapis.sheets") return library;
     const range = (library.typeDefs || []).find((t) => t.type === "Record" && t.name === "Range");
@@ -48,7 +45,7 @@ function fixSheets2DArray(library) {
     return library;
 }
 
-// --- the post-process module:addLibsToSap ---
+// Patch: ballerinax/sap — prepend the ClientError / RequestMessage type defs
 function addLibsToSap(library) {
     if (!library || library.name !== "ballerinax/sap") return library;
     library.typeDefs = [
@@ -59,7 +56,7 @@ function addLibsToSap(library) {
     return library;
 }
 
-// --- the post-process module:removeOkTrueDef ---
+// Patch: ballerinax/slack — collapse OkTrueDef to the literal `true`
 function removeOkTrueDef(library) {
     if (!library || library.name !== "ballerinax/slack") return library;
 
@@ -83,14 +80,14 @@ function removeOkTrueDef(library) {
     return library;
 }
 
-// --- the post-process module:changeClientConfigName ---
+// Patch: ballerinax/client.config — quote the reserved module-name segment
 function changeClientConfigName(library) {
     if (!library || library.name !== "ballerinax/client.config") return library;
     library.name = "ballerinax/'client.config";
     return library;
 }
 
-// --- the post-process module:removeGraphQLParser ---
+// Patch: ballerina/graphql — simplify ErrorDetail.locations to json[]
 function removeGraphQLParser(library) {
     if (!library || library.name !== "ballerina/graphql") return library;
     for (const td of library.typeDefs || []) {
@@ -104,7 +101,7 @@ function removeGraphQLParser(library) {
     return library;
 }
 
-// --- the post-process module:removeChatClientFromBallerinaAi ---
+// Patch: ballerina/ai* — drop the ChatClient client
 function removeChatClientFromBallerinaAi(library) {
     if (!library || typeof library.name !== "string") return library;
     if (!library.name.startsWith("ballerina/ai")) return library;
@@ -126,7 +123,7 @@ function _attachGenericService(library, listenerParam, instructions) {
     return library;
 }
 
-// --- the post-process module:addHttpService ---
+// Patch: ballerina/http — inject the generic service listener
 function addHttpService(library) {
     if (!library || library.name !== "ballerina/http") return library;
     return _attachGenericService(library, {
@@ -136,7 +133,7 @@ function addHttpService(library) {
     });
 }
 
-// --- the post-process module:addGraphQLService ---
+// Patch: ballerina/graphql — inject the generic service listener
 function addGraphQLService(library) {
     if (!library || library.name !== "ballerina/graphql") return library;
     return _attachGenericService(library, {
@@ -146,7 +143,7 @@ function addGraphQLService(library) {
     });
 }
 
-// --- the post-process module:addAiService ---
+// Patch: ballerina/ai — inject the generic service listener
 function addAiService(library) {
     if (!library || library.name !== "ballerina/ai") return library;
     return _attachGenericService(library, {

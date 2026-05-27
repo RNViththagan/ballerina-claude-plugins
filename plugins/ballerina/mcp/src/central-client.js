@@ -10,10 +10,9 @@ const {
     UpstreamError,
 } = require("./errors.js");
 
-// Endpoint constants — taken verbatim from
-// the Ballerina Central libraries pipeline/main.bal:24 (base URL)
-//                                                  :71 (registry/packages?org=...)
-//                                                  :469 (docs/<org>/<name>/<version>)
+// Ballerina Central public REST API (v2.0). Endpoints used:
+//   GET registry/packages?org=<org>&limit=1000&readme=false  — list an org's packages
+//   GET docs/<org>/<name>/<version>                           — fetch a package's API docs
 const CENTRAL_BASE_URL = "https://api.central.ballerina.io/2.0/";
 
 // ---------------------------------------------------------------------------
@@ -69,7 +68,7 @@ async function searchPackages(keyword, { execFile, signal } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// fetchOrgPackages — the libraries pipeline/main.bal:71
+// fetchOrgPackages
 //   GET registry/packages?org=<org>&limit=1000&readme=false
 // ---------------------------------------------------------------------------
 
@@ -80,7 +79,7 @@ async function fetchOrgPackages(org, { fetch, signal, limit = 1000 } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// resolveLatestVersion — the libraries pipeline/main.bal:74-78 (filter exact name client-side)
+// resolveLatestVersion — filter to the exact org/name client-side
 // ---------------------------------------------------------------------------
 
 async function resolveLatestVersion(org, name, { fetch, signal } = {}) {
@@ -93,7 +92,7 @@ async function resolveLatestVersion(org, name, { fetch, signal } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// fetchDocs — the libraries pipeline/main.bal:469
+// fetchDocs
 //   GET docs/<org>/<name>/<version>
 // ---------------------------------------------------------------------------
 

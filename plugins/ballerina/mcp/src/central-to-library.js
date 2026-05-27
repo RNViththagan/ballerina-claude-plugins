@@ -3,7 +3,6 @@
 /**
  * Converts a Ballerina Central docs API response to a Library object.
  *
- * Port of the libraries pipeline/the central converter from the Ballerina Central libraries project.
  * Input:  GET https://api.central.ballerina.io/2.0/docs/<org>/<name>/<version>
  * Output: Library object compatible with to-syntax-string.js
  */
