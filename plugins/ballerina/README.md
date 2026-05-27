@@ -17,12 +17,35 @@ The `library` sub-agent discovers Ballerina libraries via the bundled MCP server
 
 ## Installation
 
+**1. Add the marketplace** (from GitHub, or a local clone):
+
 ```
-/plugin marketplace add /path/to/ballerina-claude-plugins
+/plugin marketplace add RNViththagan/ballerina-claude-plugins
+# or: /plugin marketplace add /path/to/ballerina-claude-plugins
+```
+
+**2. Install the plugin:**
+
+```
 /plugin install ballerina@ballerina-claude-plugins
 ```
 
-Then restart Claude Code to activate the skill.
+**3. Restart Claude Code.** This activates all four components:
+
+- the **language server** for `.bal` files (completions, hover, diagnostics),
+- the **`ballerina` skill** for writing/running/testing code,
+- the **`library` discovery agent** (bundled `ballerina-library` MCP server),
+- the **skill-reminder hooks**.
+
+No `npm install` step is required — the MCP server ships pre-bundled at `mcp/dist/server.js`.
+
+### Verify
+
+```
+/plugin              # confirm `ballerina` is listed and enabled
+```
+
+Open a `.bal` file and confirm completions appear, or ask Claude to "write a Ballerina HTTP service".
 
 ## Using the skill
 
